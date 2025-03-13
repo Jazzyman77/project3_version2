@@ -27,4 +27,7 @@ interface MovieDao {
 
     @Query("SELECT * FROM movie WHERE title LIKE :query")
     suspend fun searchMovies(query: String): List<Movie> // Now returns List<Movie>
+
+    @Query("Select directorId from director")
+    suspend fun getValidParentIds(): List<Int>
 }

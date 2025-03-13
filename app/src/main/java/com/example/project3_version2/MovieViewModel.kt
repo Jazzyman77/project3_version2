@@ -10,18 +10,28 @@ import androidx.lifecycle.asLiveData
 
 class MovieViewModel(private val repository: MovieRepository) : ViewModel() {
     val allMovies: LiveData<List<Movie>> = repository.allMovies.asLiveData()
+
+
+    private val _directors = repository.allDirectors.asLiveData()
+    val directors: LiveData<List<Director>> get() = _directors
+
+
     private val _searchResults = MutableLiveData<List<Movie>>()
     val searchResults: LiveData<List<Movie>> get() = _searchResults
-    fun insert(movie: Movie) = viewModelScope.launch {
-        repository.insert(movie)
+
+
+    fun insertMovie(movie: Movie) = viewModelScope.launch {
+        repository.insertMovie(movie)
     }
 
-    fun update(movie: Movie) = viewModelScope.launch {
-        repository.update(movie)
+    fun updateMovie(movie: Movie) = viewModelScope.launch {
+        repository.updateMovie(movie)
     }
+
+
 
     fun delete(movie: Movie) = viewModelScope.launch {
-        repository.delete(movie)
+        repository.deleteMovie(movie)
 
     }
 
