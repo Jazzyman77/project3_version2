@@ -1,19 +1,21 @@
 package com.example.project3_version2
 
+import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import com.example.project3.FunFact
-import kotlinx.coroutines.launch
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
+    private lateinit var movieViewModel: MovieViewModel
+    private lateinit var movieRecyclerViewAdaptar: MovieRecyclerViewAdapter
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -25,60 +27,47 @@ class MainActivity : AppCompatActivity() {
         }
 
         appDatabase = AppDatabase.getDatabase(this)
+
         val movieDao = appDatabase.movieDao()
-        val directorDao = appDatabase.directorDao()
-        val funFactDao = appDatabase.funFactDao()
-        val directorMovieDao = appDatabase.directorMovieDao()
-        val movieFunFactDao = appDatabase.movieFunFactDao()
+        val movieRepository = MovieRepository(movieDao)
+        val movieFactory = MovieViewModelFactory(movieRepository)
 
-        lifecycleScope.launch {
+        movieViewModel = ViewModelProvider(this, movieFactory)[MovieViewModel::class.java]
 
-            // Query data
-            movieDao.deleteAllMovies()
-            directorDao.deleteAllDirectors()
-            val dir1 = Director(directorId =1, name= "George Lucas")
-            val dir2 = Director(directorId = 2, name= "Christopher Nolan")
-           val movie1 = Movie(movieId= 1,title = "Star Wars", releaseDate = "1979", directorId = 1)
-            val movie2 = Movie(movieId = 2,title = "Dark Knight", releaseDate = "2008", directorId = 2)
-            val funFact1 = FunFact(id= 1, movieId= 1, description = "The original title was 'The Star Wars'.")
-            val funFact2 = FunFact(id= 2, movieId= 1, description = "In the original theatrical cut there is a stormtrooper who hits his head.")
-            val funFact3 = FunFact(id= 3, movieId= 2, description = "Heath Ledger won a posthumous Oscar for his role as the Joker.")
-            val funFact4 = FunFact(id= 4, movieId= 2, description = "The scene when joker messes with a detonator switch was improv, as there was an actual delay before the pyrotechnics went off")
-
-
-            directorDao.insert(dir1)
-            directorDao.insert(dir2)
-            movieDao.insert(movie1)
-            movieDao.insert((movie2))
-            funFactDao.insert(funFact1)
-            funFactDao.insert(funFact2)
-            funFactDao.insert(funFact3)
-            funFactDao.insert(funFact4)
-
-            val movies = movieDao.getAll()
-            val directors = directorDao.getAll()
-            val directorMovies = directorMovieDao.getDirectorMovies()
-            val movieFunFacts = movieFunFactDao.getMovieFunFacts()
-            for (m in movies) {
-                Log.i("CS3680", "Id: ${m.movieId} Movie: ${m.title}, release Date: ${m.releaseDate}")
-            }
-            for ( d in directors) {
-                Log.i("CS3680", "Id: ${d.directorId} Name: ${d.name}")
-            }
-            for (dir in directorMovies) {
-                Log.i("CS3680", "Director ${dir.director.name} has directed:")
-                for (mov in dir.movies) {
-                Log.i("CS3680", "${mov.title} ${mov.releaseDate}")
-                }
-            }
-
-            for (mov in movieFunFacts) {
-                Log.i("CS3680", "${mov.movie.title} fun facts!:")
-                for (fac in mov.funFacts) {
-                    Log.i("CS3680", fac.description)
-                }
-            }
-
+        movieRecyclerViewAdaptar = MovieRecyclerViewAdapter { movie ->
+            movieViewModel.delete(movie) // Calls ViewModel delete function
         }
+
+        val recyclerView: RecyclerView = findViewById(R.id.movie_recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = movieRecyclerViewAdaptar
+
+        // Observe LiveData from ViewModel and update adapter when data changes
+        movieViewModel.allMovies.observe(this) { movies ->
+            movieRecyclerViewAdaptar.submitList(movies)
+        }
+
+        val searchView: SearchView = findViewById(R.id.movieSearch)
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText.isNullOrEmpty()) {
+                    movieViewModel.allMovies.observe(this@MainActivity) { movies ->
+                        movieRecyclerViewAdaptar.submitList(movies)
+                    }
+                } else {
+                    movieViewModel.searchMovies(newText) // Calls suspend function
+                    movieViewModel.searchResults.observe(this@MainActivity) { movies ->
+                        movieRecyclerViewAdaptar.submitList(movies)
+                    }
+                }
+                return true
+            }
+        })
+
     }
+
 }

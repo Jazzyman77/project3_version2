@@ -15,5 +15,6 @@ data class Movie(
     @PrimaryKey(autoGenerate = true) val movieId: Int = 1,
     @ColumnInfo(name= "title") val title: String,
     @ColumnInfo(name= "releaseDate") val releaseDate: String,
+    @ColumnInfo(name="boxOffice") val boxOffice: Long,
     @ColumnInfo(name= "directorId") val directorId: Int
 )

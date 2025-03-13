@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.project3.FunFact
 //Whatsup this is testing repository is working
-@Database(entities = [Movie::class, Director::class, FunFact::class], version = 5)
+@Database(entities = [Movie::class, Director::class, FunFact::class], version = 8)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun movieDao(): MovieDao
     abstract fun directorDao(): DirectorDao
@@ -29,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 ).fallbackToDestructiveMigration()
-                    //.createFromAsset("srcDataBase.db")
+                    .createFromAsset("movieFunfacts.db")
                     .build()
 
                 // Assign the instance to the static variable INSTANCE for future use
@@ -37,6 +37,8 @@ abstract class AppDatabase : RoomDatabase() {
                 instance
             }
         }
-
+        fun resetInstance() {
+            INSTANCE = null
+        }
     }
 }
