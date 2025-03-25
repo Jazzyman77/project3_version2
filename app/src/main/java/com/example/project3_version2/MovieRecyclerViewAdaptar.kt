@@ -9,7 +9,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 class MovieRecyclerViewAdapter(
-    private val onDelete: (Movie) -> Unit // Callback to delete item
+    private val onDelete: (Movie) -> Unit, // Callback to delete item
+    private val onItemClick: (Movie) -> Unit,  // Lambda for item click
 ) : ListAdapter<Movie, MovieRecyclerViewAdapter.ViewHolderClass>(DiffCallback()) {
 
     private var originalList: List<Movie> = emptyList()
@@ -25,6 +26,7 @@ class MovieRecyclerViewAdapter(
 
         holder.itemView.setOnClickListener {
             Log.i("CS3680", "item clicked on")
+            onItemClick(currentItem)
         }
 
         holder.deleteBtn.setOnClickListener {

@@ -18,4 +18,7 @@ interface DirectorDao {
 
     @Query("SELECT * FROM director WHERE name LIKE :query")
     suspend fun searchDirectors(query: String): List<Director>
+
+    @Query("SELECT * FROM director WHERE directorId = :directorId LIMIT 1")
+    suspend fun getDirectorById(directorId: Int): Director?
 }

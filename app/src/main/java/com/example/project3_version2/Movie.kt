@@ -1,5 +1,6 @@
 package com.example.project3_version2
 
+import androidx.lifecycle.LiveData
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -12,7 +13,7 @@ import androidx.room.PrimaryKey
     onDelete = ForeignKey.CASCADE
 )])
 data class Movie(
-    @PrimaryKey(autoGenerate = true) val movieId: Int = 1,
+    @PrimaryKey(autoGenerate = true) val movieId: Int,
     @ColumnInfo(name= "title") val title: String,
     @ColumnInfo(name= "releaseDate") val releaseDate: String,
     @ColumnInfo(name="boxOffice") val boxOffice: Long,
